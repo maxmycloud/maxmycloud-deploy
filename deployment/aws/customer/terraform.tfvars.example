@@ -1,0 +1,62 @@
+# Copy to terraform.tfvars and fill in real values.
+# terraform.tfvars is gitignored (contains customer-specific data).
+#
+# Only the knobs you're expected to think about are shown here. All other
+# infra defaults live in variables.tf; override there if you have a reason.
+# See DEPLOY.md for the full runbook.
+
+# ─── Where + prefix ──────────────────────────────────────────────
+region      = "us-east-1"    # any Bedrock-supported region works
+name_prefix = "maxmycloud"   # ≤16 chars — ALB name limit
+
+# ─── Container image ─────────────────────────────────────────────
+# LEAVE THIS AS-IS for the first `terraform apply`. It's a public
+# placeholder (nginx) so ECS can start something while Terraform stands
+# up the rest of the infra. After Step 4 you'll get an ECR URL from
+# `terraform output` and replace this with e.g.:
+#   "123456789012.dkr.ecr.us-east-1.amazonaws.com/maxmycloud-app-a4c7:v0.3.7"
+container_image = "public.ecr.aws/nginx/nginx:stable-alpine"
+
+# ─── Single-tenant identity ──────────────────────────────────────
+# You invent both — not looked up anywhere. See DEPLOY.md § Step 2.
+tenant_client_id    = "your-company-slug"    # short, DNS-safe (e.g. "acme")
+tenant_display_name = "Your Company"         # human-readable, shown on login
+
+# ─── Email (SES) ─────────────────────────────────────────────────
+# Verified sender identity in your SES account. See DEPLOY.md § 1.3.
+email_from_address = "Your Company FinOps <finops@yourcompany.com>"
+
+# ─── AI kill-switch ──────────────────────────────────────────────
+# Leave TRUE for initial install — no Bedrock traffic until you flip it.
+# See DEPLOY.md § Step 7 for the turn-on flow.
+ai_features_disabled = true
+
+# ─── LLM (Bedrock) — only used when ai_features_disabled = false ─
+# See DEPLOY.md § 1.2 for the recommendation table.
+bedrock_model_main = "us.amazon.nova-pro-v1:0"
+bedrock_model_fast = "us.amazon.nova-lite-v1:0"
+
+# ─── HTTPS + your hostname (REQUIRED) ────────────────────────────
+# Recommended: run under a hostname you own with a browser-trusted cert.
+# See DEPLOY.md § 1.4 for the full walkthrough. Pick one:
+#
+# --- Path A: Route 53 hosted zone (recommended) ---
+# Terraform auto-issues + validates the ACM cert via DNS.
+fqdn                = "maxmycloud.internal.acme.com"    # <-- your hostname
+route53_zone_id     = "Z0123456ABCDEFGHIJ"              # <-- your R53 zone id
+#
+# --- Path B: DNS outside AWS (Cloudflare / GoDaddy / on-prem) ---
+# Provision ACM cert yourself, then set the ARN below. Leave the two
+# fields above empty when using this path.
+acm_certificate_arn = ""
+#
+# --- Not recommended for real users: self-signed cert for short POCs ---
+# Browsers show a Not Secure warning. Migrate to Path A or B before
+# anyone beyond your evaluation team uses this.
+use_self_signed_cert = false
+
+# ─── Tags ────────────────────────────────────────────────────────
+extra_tags = {
+  # CostCenter = "..."
+  # Owner      = "..."
+}

@@ -1,0 +1,42 @@
+# .dockerignore — keep the build context tight so `docker build .` is fast
+# and we don't accidentally bake secrets or scratch state into the image.
+
+node_modules
+.output
+.nuxt
+.git
+.github
+
+# Env + secrets
+.env
+.env.*
+!.env.example
+
+# Screenshots + logs (dev artifacts)
+logs
+Screenshot*
+docs/*.pdf
+
+# Snapshot data (mounted at runtime, not baked in)
+data/snapshots
+!data/.gitkeep
+
+# Test / scratch infra state
+deployment/aws/phase0/.terraform
+deployment/aws/phase0/terraform.tfstate*
+deployment/aws/phase0/bastion_key.pem
+deployment/aws/phase0/node_modules
+deployment/aws/phase0/global-bundle.pem
+deployment/aws/**/.terraform
+deployment/aws/**/terraform.tfstate*
+deployment/aws/**/tfplan
+deployment/aws/**/node_modules
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+*.swp
+
+# Test outputs
+coverage

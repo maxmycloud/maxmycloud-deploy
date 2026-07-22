@@ -1,0 +1,13 @@
+# Terraform local state + sensitive artifacts
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+*.tfplan
+crash.log
+
+# terraform.tfvars is customer-specific
+terraform.tfvars
+
+# SSH keys generated for the temp bastion — regenerated on each apply, must not commit
+*.pem
+
