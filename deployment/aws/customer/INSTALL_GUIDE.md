@@ -18,7 +18,7 @@ Everything you'll need a URL, name, or contact for, in one place. Bookmarkable �
 | **AWS runbook path (this doc)** | `deployment/aws/customer/INSTALL_GUIDE.md` |
 | **AWS Terraform reference (deeper)** | `deployment/aws/customer/DEPLOY.md` |
 | **Container image registry** | `ghcr.io/maxmycloud/maxmycloud-ui:<version>` — public, anonymous `docker pull` |
-| **Latest release version** | `v0.3.17` (check `github.com/maxmycloud/maxmycloud-deploy/releases` for newer) |
+| **Latest release version** | See [github.com/maxmycloud/maxmycloud-deploy/releases](https://github.com/maxmycloud/maxmycloud-deploy/releases) — or list available image tags at `github.com/maxmycloud/maxmycloud-ui/pkgs/container/maxmycloud-ui`. Substitute the newest `v*.*.*` tag for `<latest-tag>` wherever it appears below. |
 | **Snowflake Native App name** | `Monitor Center` — appears under Snowsight → Data Products → Apps → Recently Shared |
 | **Onboarding + support** | `support@maxmycloud.com` |
 | **Enterprise escalation** | `richard.yan@maxmycloud.com` |
@@ -266,9 +266,9 @@ aws ecr get-login-password --region <region> | \
 Pull the latest MaxMyCloud release from the public registry, retag for your ECR, and push:
 
 ```bash
-docker pull ghcr.io/maxmycloud/maxmycloud-ui:v0.3.17
-docker tag ghcr.io/maxmycloud/maxmycloud-ui:v0.3.17 <ecr-repo>:v0.3.17
-docker push <ecr-repo>:v0.3.17
+docker pull ghcr.io/maxmycloud/maxmycloud-ui:<latest-tag>
+docker tag  ghcr.io/maxmycloud/maxmycloud-ui:<latest-tag> <ecr-repo>:<latest-tag>
+docker push <ecr-repo>:<latest-tag>
 ```
 
 Update `container_image` in `terraform.tfvars` to the full image URI you just pushed, then re-apply:
