@@ -18,7 +18,7 @@ Everything you'll need a URL, name, or contact for, in one place. Bookmarkable �
 | **AWS runbook path (this doc)** | `deployment/aws/customer/INSTALL_GUIDE.md` |
 | **AWS Terraform reference (deeper)** | `deployment/aws/customer/DEPLOY.md` |
 | **Container image registry** | `ghcr.io/maxmycloud/maxmycloud-ui:<version>` — public, anonymous `docker pull` |
-| **Latest release version** | See [github.com/maxmycloud/maxmycloud-deploy/releases](https://github.com/maxmycloud/maxmycloud-deploy/releases) — or list available image tags at `github.com/maxmycloud/maxmycloud-ui/pkgs/container/maxmycloud-ui`. Substitute the newest `v*.*.*` tag for `<latest-tag>` wherever it appears below. |
+| **Latest release version** | Check [github.com/maxmycloud/maxmycloud-deploy/tags](https://github.com/maxmycloud/maxmycloud-deploy/tags) — every version is tagged there on release. Subscribe at `.../tags.atom` for RSS. Substitute the newest `v*.*.*` tag for `<latest-tag>` wherever it appears below. |
 | **Snowflake Native App name** | `Monitor Center` — appears under Snowsight → Data Products → Apps → Recently Shared |
 | **Onboarding + support** | `support@maxmycloud.com` |
 | **Enterprise escalation** | `richard.yan@maxmycloud.com` |
