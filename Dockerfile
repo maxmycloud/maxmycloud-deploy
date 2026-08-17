@@ -23,6 +23,19 @@ WORKDIR /app
 # Non-root user for defense-in-depth
 RUN groupadd -r app && useradd -r -g app -d /app app
 
+# Amazon RDS/DocumentDB CA bundle. DocumentDB requires TLS and its CA is
+# not in any standard trust store, so any customer connecting to DocDB
+# needs this file — the MONGODB_URI's `tlsCAFile=` param points at it.
+# Fetched at image-build time (not runtime) so the container has no boot
+# dependency on truststore.pki.rds.amazonaws.com.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends wget ca-certificates \
+    && wget -qO /etc/ssl/certs/global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
+    && chmod 0644 /etc/ssl/certs/global-bundle.pem \
+    && apt-get purge -y wget \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
 # .output/ is fully self-contained (Nitro bundles server + client + deps)
 COPY --from=builder --chown=app:app /app/.output /app/.output
 
