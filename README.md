@@ -1,38 +1,39 @@
 # maxmycloud-deploy
 
-Everything you need to install **MaxMyCloud** — a Snowflake FinOps platform — into your own AWS account. This repo contains no product source code; only what a customer engineer needs to install and operate the app inside your tenants.
+Everything you need to install **MaxMyCloud** — a Snowflake FinOps platform — into your own AWS and Snowflake tenants. This repo contains no product source code; only what a customer engineer needs to install and operate the app inside your tenants.
 
 ## Start here
 
-**[`deployment/aws/customer/INSTALL_GUIDE.md`](deployment/aws/customer/INSTALL_GUIDE.md)** — end-to-end walkthrough covering both the Snowflake side (Native App, OAuth Security Integration) and the AWS side (Terraform, container image, first-account bootstrap). Read this first.
+Read **[`INSTALL_GUIDE.md`](INSTALL_GUIDE.md)** at the root of this repo. It's the single end-to-end walkthrough covering the Snowflake side (Native App, OAuth), the AWS side (container + supporting services), and the first-connection setup that ties the two together. Both paths — using our Terraform module or bringing your own IaC — are documented there.
 
-## Contents
+That's the only doc most customers need to read up front. Everything else in this repo is either optional or referenced from the guide.
 
-| Path | What |
+## What else is in this repo
+
+| Path | When you need it |
 |---|---|
-| [`deployment/aws/customer/INSTALL_GUIDE.md`](deployment/aws/customer/INSTALL_GUIDE.md) | Customer install walkthrough (Snowflake + AWS + bootstrap) |
-| [`deployment/aws/customer/architecture.svg`](deployment/aws/customer/architecture.svg) | Architecture diagram embedded in the install guide |
-| [`deployment/aws/customer/DEPLOY.md`](deployment/aws/customer/DEPLOY.md) | AWS Terraform reference — variable catalog, HTTPS options, cost baseline, troubleshooting |
-| [`deployment/aws/customer/*.tf`](deployment/aws/customer/) | Terraform module (VPC, ECS Fargate, DocumentDB, EFS, ALB, IAM) |
-| [`Dockerfile`](Dockerfile) | For customers who prefer building the container image from source rather than pulling the pre-built image |
+| [`INSTALL_GUIDE.md`](INSTALL_GUIDE.md) | **Read first.** End-to-end install walkthrough. |
+| [`docs/customer/install/MaxMyCloud_SecretsHandoff_Template.pdf`](docs/customer/install/MaxMyCloud_SecretsHandoff_Template.pdf) | Environment-variable template you populate in your secret store. Direct-download recommended over in-browser preview. |
+| [`docs/customer/install/`](docs/customer/install/) | Other install references — cost estimate, deployment spec, standard/enterprise edition guides. |
+| [`deployment/aws/customer/`](deployment/aws/customer/) | Terraform module (VPC, ECS Fargate, DocumentDB, EFS, ALB, IAM). Optional — use it, use it as reference, or ignore if you're bringing your own IaC. |
+| [`deployment/aws/customer/DEPLOY.md`](deployment/aws/customer/DEPLOY.md) | Terraform variable catalog, HTTPS options, cost baseline, troubleshooting. Reference when you're deep in the Terraform. |
+| [`Dockerfile`](Dockerfile) | If you'd rather build the container image from source than pull the pre-built one. Most customers pull the pre-built. |
 
 ## Container images
 
-Pre-built images are published to GitHub Container Registry — anonymous pull, no authentication:
+Pre-built images are published to GitHub Container Registry — public, anonymous pull:
 
 ```
 ghcr.io/maxmycloud/maxmycloud-ui:<version>
 ```
 
-Release tags here move in lockstep with image tags. Latest release is listed at [Releases](../../releases).
+Pin to a specific tag; do NOT use `:latest`. Every version is tagged at [Releases](../../releases). Subscribe to the tags atom feed for release notifications: `https://github.com/maxmycloud/maxmycloud-deploy/tags.atom`.
 
 ## Support
-
-Reach out any time — install questions, feature requests, or anything else:
 
 - `support@maxmycloud.com` — onboarding, operations, general questions
 - `richard.yan@maxmycloud.com` — enterprise escalations
 
-## Relationship to the source repo
+## About this repo
 
-The MaxMyCloud application source lives in a separate private repo. This deploy repo mirrors only the customer-facing subset so you never need access to source to install or operate the app.
+The MaxMyCloud application source lives in a separate private repo. This deploy repo mirrors only the customer-facing subset so you never need access to source to install or operate the app. Sync happens automatically on every prod release.
