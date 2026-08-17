@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MaxMyCloud Installation Guide — Standard Edition</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 16mm 16mm;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: #222;
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ────── Title block ────── */
+  .cover {
+    background: #0b0b0d;
+    color: #f5c518;
+    padding: 26mm 12mm 20mm 12mm;
+    text-align: center;
+    border-radius: 6px;
+    margin-bottom: 12mm;
+  }
+  .cover h1 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 900;
+    font-size: 38pt;
+    letter-spacing: -0.5px;
+    line-height: 1.02;
+    margin: 0 0 6mm 0;
+    text-transform: uppercase;
+  }
+  .cover .edition {
+    display: inline-block;
+    background: #f5c518;
+    color: #0b0b0d;
+    padding: 3mm 6mm;
+    font-weight: 800;
+    font-size: 12pt;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-radius: 3px;
+    margin-bottom: 6mm;
+  }
+  .cover .subtitle {
+    color: #f5c518;
+    font-size: 10.5pt;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    margin: 0;
+  }
+
+  /* ────── Section headers ────── */
+  h2 {
+    background: #0b0b0d;
+    color: #f5c518;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 15pt;
+    font-weight: 900;
+    letter-spacing: -0.2px;
+    padding: 4mm 6mm;
+    border-radius: 4px;
+    margin: 10mm 0 5mm 0;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 12pt;
+    color: #0b0b0d;
+    font-weight: 800;
+    margin: 6mm 0 2mm 0;
+    page-break-after: avoid;
+  }
+
+  h4 {
+    font-size: 10.5pt;
+    color: #0b0b0d;
+    font-weight: 700;
+    margin: 4mm 0 1.5mm 0;
+    page-break-after: avoid;
+  }
+
+  p, li { font-size: 10.5pt; }
+
+  ul, ol { margin: 2mm 0 3mm 0; padding-left: 6mm; }
+  li { margin-bottom: 1.5mm; }
+
+  strong { color: #0b0b0d; font-weight: 700; }
+  em { color: #444; }
+
+  code {
+    font-family: "SF Mono", "Consolas", "Menlo", monospace;
+    font-size: 9.8pt;
+    background: #f4f4f4;
+    padding: 1px 4px;
+    border-radius: 2px;
+    color: #b8004a;
+  }
+
+  pre {
+    background: #f6f7f9;
+    border-left: 3px solid #f5c518;
+    padding: 3mm 4mm;
+    margin: 2mm 0 4mm 0;
+    font-family: "SF Mono", "Consolas", "Menlo", monospace;
+    font-size: 9.5pt;
+    line-height: 1.45;
+    color: #1c2733;
+    border-radius: 2px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  .callout {
+    background: #fff9dc;
+    border-left: 4px solid #f5c518;
+    padding: 4mm 5mm;
+    margin: 4mm 0;
+    border-radius: 3px;
+    font-size: 10.3pt;
+  }
+  .callout strong { color: #7a5c00; }
+
+  .replace {
+    color: #b8004a;
+    font-weight: 700;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3mm 0 4mm 0;
+    font-size: 10pt;
+  }
+  th, td {
+    text-align: left;
+    padding: 2.5mm 3mm;
+    vertical-align: top;
+    border-bottom: 1px solid #e3ebf2;
+  }
+  thead th {
+    background: #0b0b0d;
+    color: #f5c518;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-size: 9pt;
+    border-bottom: none;
+  }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+
+  hr {
+    border: none;
+    border-top: 1px solid #d8e2ec;
+    margin: 8mm 0;
+  }
+
+  .footer-note {
+    margin-top: 8mm;
+    font-size: 9.5pt;
+    color: #6a7684;
+    text-align: center;
+    font-style: italic;
+  }
+
+  a { color: #1564c0; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>MaxMyCloud<br/>Installation<br/>Guide</h1>
+  <div class="edition">Standard Edition</div>
+  <p class="subtitle">Step-by-step installation process</p>
+</div>
+
+<h2>Introduction</h2>
+
+<p>This guide walks through installing the <strong>Standard Edition</strong> of MaxMyCloud &mdash; our multi-tenant SaaS offering. Standard Edition customers all sign in at <strong><a href="https://app.maxmycloud.com">app.maxmycloud.com</a></strong>. Follow the steps in order for a smooth setup.</p>
+
+<p><strong>Target audience:</strong> System Administrators, IT Professionals.</p>
+
+<h3>Prerequisites</h3>
+
+<ul>
+  <li>An active MaxMyCloud subscription.</li>
+  <li>A Snowflake account with privileges to install applications and create roles &mdash; <code>ACCOUNTADMIN</code> recommended.</li>
+  <li>A modern web browser.</li>
+  <li>An authenticator app on your phone (Google Authenticator, Microsoft Authenticator, Authy, 1Password, etc.) &mdash; needed to complete MFA enrollment at first sign-in.</li>
+  <li>OpenSSL on your workstation (for generating the Snowflake key pair in Section 1.4). Pre-installed on macOS and Linux; on Windows use WSL or Git-Bash.</li>
+</ul>
+
+<h2>1. Snowflake Setup</h2>
+
+<p>Complete all of Section 1 <strong>once per Snowflake account</strong> you want MaxMyCloud to monitor. If you have separate prod / dev / business-unit accounts, repeat the section for each. Each account gets its own Native App install, its own role, and its own service user + key pair.</p>
+
+<h3>1.1 &middot; Share your Snowflake account identifier(s) and first admin email</h3>
+
+<p>MaxMyCloud distributes the Monitor Center Native App through Snowflake Private Listing, and creates your first user account in the MaxMyCloud SaaS. We need two things from you to get started:</p>
+
+<ol>
+  <li><strong>Your Snowflake account identifier(s)</strong> &mdash; so we can publish the Native App private listing to each account.</li>
+  <li><strong>The email address of your first admin user</strong> &mdash; the person who will sign in first to your MaxMyCloud tenant.</li>
+</ol>
+
+<p>For <strong>each</strong> Snowflake account you want to monitor, run this in a Snowflake worksheet to get the identifier:</p>
+
+<pre><code>SELECT CURRENT_ORGANIZATION_NAME() || '.' || CURRENT_ACCOUNT_NAME();</code></pre>
+
+<p>Alternatively, in the Snowsight UI: click your user profile at the bottom &rarr; <strong>Account</strong> &rarr; <strong>View account details</strong> &rarr; <strong>Copy data sharing account identifier</strong>.</p>
+
+<p>Send both items &mdash; the account identifier(s) and the first admin's email &mdash; to your MaxMyCloud contact (or <a href="mailto:support@maxmycloud.com">support@maxmycloud.com</a>). Sending them together lets MaxMyCloud publish the private listing and provision your user account in parallel; both are typically ready the same business day.</p>
+
+<p>You'll receive an email confirmation from MaxMyCloud once the Native App private listing is live in each Snowflake account.</p>
+
+<div class="callout">
+  <strong>Wait for confirmation from MaxMyCloud</strong> before starting Section 1.2 &mdash; the Native App won't appear in your Snowsight UI until the private listing has been published to your account.
+</div>
+
+<h3>1.2 &middot; Install the Native App</h3>
+
+<p>In Snowsight, sign in as an admin who can install applications, then:</p>
+
+<ol>
+  <li>Navigate to <strong>Data Products &rarr; Apps</strong> in the left navigation.</li>
+  <li>Under <strong>Recently Shared with You</strong>, find <strong>Monitor Center (MaxMyCloud)</strong> and click <strong>Get</strong> to download.</li>
+  <li>Once the download completes, the app appears under <strong>Installed Apps</strong>. Click <strong>Monitor Center</strong> to begin installation.</li>
+  <li>Select <code>SNOWFLAKE_INSIGHT</code>. Snowflake starts the installation.</li>
+  <li>Two authorization prompts appear requesting Snowflake privileges &mdash; click <strong>Grant Privileges</strong>, then <strong>Allow</strong>, on each. The requested account-level privileges include <code>IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE</code>, <code>MANAGE WAREHOUSES</code>, <code>EXECUTE TASK</code>, and <code>EXECUTE MANAGED TASK</code>.</li>
+</ol>
+
+<p>Installation usually completes in under 30 seconds. A green checkmark on the Monitor Center welcome screen confirms the install; the initial data refresh starts automatically in the background and it's safe to close the app window.</p>
+
+<h3>1.3 &middot; Create the MaxMyCloud role</h3>
+
+<p>MaxMyCloud uses a dedicated Snowflake role &mdash; <code>maxmycloud_role</code> &mdash; to query the Native App and the warehouse metadata it needs. Run this as <code>ACCOUNTADMIN</code> in a Snowflake worksheet:</p>
+
+<pre><code>CREATE ROLE maxmycloud_role;
+
+GRANT APPLICATION ROLE monitor_center.app_maxmycloud   TO ROLE maxmycloud_role;
+GRANT USAGE ON WAREHOUSE <span class="replace">your_warehouse</span>                TO ROLE maxmycloud_role;
+GRANT USAGE ON INTEGRATION MAXMYCLOUD_API_INTEGRATION  TO ROLE maxmycloud_role;
+GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE        TO ROLE maxmycloud_role;</code></pre>
+
+<p>Replace <code class="replace">your_warehouse</code> with the warehouse you want MaxMyCloud to use for its own queries. An <strong>X-Small</strong> warehouse is typically sufficient. Note the warehouse name &mdash; you'll enter it in Section 3.</p>
+
+<h3>1.4 &middot; Create the Snowflake service user (key-pair authentication)</h3>
+
+<p>MaxMyCloud's backend processes &mdash; scheduled health checks, ongoing warehouse monitoring, autosize actions, subscription refresh &mdash; authenticate to your Snowflake account as a dedicated <code>maxmycloud</code> service user, using a <strong>key pair</strong>. Key-pair auth is the standard Snowflake pattern for machine-to-machine access: the key never appears in a login prompt, never expires on a schedule, and never rotates through the user-password channel. No human logs in with this credential.</p>
+
+<h4>a. Generate a key pair on your workstation</h4>
+
+<pre><code>openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt
+openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub</code></pre>
+
+<p>You'll get two files:</p>
+<ul>
+  <li><code>rsa_key.p8</code> &mdash; the <strong>private</strong> key. Keep this safe; you'll paste its contents into the MaxMyCloud UI in Section 3.</li>
+  <li><code>rsa_key.pub</code> &mdash; the <strong>public</strong> key. Its content goes into the Snowflake user in the next step.</li>
+</ul>
+
+<h4>b. Create the Snowflake user</h4>
+
+<p>Run as <code>ACCOUNTADMIN</code>:</p>
+
+<pre><code>CREATE OR REPLACE USER maxmycloud
+  PASSWORD          = ''              -- empty for key-pair auth
+  LOGIN_NAME        = 'maxmycloud'
+  DISPLAY_NAME      = 'maxmycloud'
+  DEFAULT_WAREHOUSE = '<span class="replace">your_warehouse</span>'
+  DEFAULT_ROLE      = 'maxmycloud_role'
+  DISABLED          = FALSE;
+
+GRANT ROLE maxmycloud_role TO USER maxmycloud;</code></pre>
+
+<h4>c. Attach the public key to the Snowflake user</h4>
+
+<p>Open <code>rsa_key.pub</code> in a text editor. Copy the content <strong>between</strong> the <code>-----BEGIN PUBLIC KEY-----</code> and <code>-----END PUBLIC KEY-----</code> lines &mdash; a single block with no line breaks &mdash; and run:</p>
+
+<pre><code>ALTER USER maxmycloud SET RSA_PUBLIC_KEY='<span class="replace">MIIBIjANBgkqh…</span>';</code></pre>
+
+<p>Verify the key attached correctly:</p>
+
+<pre><code>DESC USER maxmycloud;</code></pre>
+
+<p>Confirm <code>RSA_PUBLIC_KEY_FP</code> in the output is non-empty.</p>
+
+<div class="callout">
+  <strong>Gather these details before moving on to Section 3</strong> &mdash; you'll enter them yourself in the MaxMyCloud UI to wire up the connection:
+  <ul style="margin-top: 2mm; margin-bottom: 0;">
+    <li>Snowflake account identifier (from Section 1.1)</li>
+    <li>Warehouse name (from Section 1.3)</li>
+    <li>Service username &mdash; <code>maxmycloud</code></li>
+    <li>Service role &mdash; <code>maxmycloud_role</code></li>
+    <li>Private key file contents &mdash; <code>rsa_key.p8</code></li>
+  </ul>
+</div>
+
+<h2>2. MaxMyCloud Provisions Your First User</h2>
+
+<p>Once your Native App install is confirmed (Section 1.2 complete), let your MaxMyCloud contact know. MaxMyCloud will then provision your first admin user account inside your MaxMyCloud tenant, using the email address you provided in Section 1.1.</p>
+
+<p>Here's what happens next, from your side:</p>
+
+<ol>
+  <li>The first admin receives an automatic email from MaxMyCloud with a set-your-password link. Link is valid for 24 hours &mdash; ask us to resend if it expires.</li>
+  <li>Click the link, set a password.</li>
+  <li>Because admin accounts require two-factor authentication, you'll be prompted to enroll in <strong>MFA using an authenticator app</strong> (Google Authenticator, Microsoft Authenticator, Authy, 1Password, etc.). Scan the QR code and enter a six-digit code to confirm enrollment.</li>
+  <li>Sign in at <strong><a href="https://app.maxmycloud.com">app.maxmycloud.com</a></strong> using your email address, password, and the six-digit code from your authenticator app.</li>
+</ol>
+
+<p>You're now signed in as the tenant admin. Continue to Section 3 to connect your Snowflake account.</p>
+
+<h2>3. Add Your Snowflake Account in MaxMyCloud</h2>
+
+<p>Now that you're signed in, wire your Snowflake account into MaxMyCloud yourself &mdash; using the details you gathered at the end of Section 1.</p>
+
+<ol>
+  <li>In the MaxMyCloud UI, navigate to <strong>Settings &rarr; Accounts</strong>.</li>
+  <li>Click <strong>Add Account</strong>.</li>
+  <li>Fill in the form using the mapping below.</li>
+  <li>Click <strong>Add Account</strong> at the bottom. MaxMyCloud tests the connection and starts the initial data refresh.</li>
+</ol>
+
+<table>
+  <thead>
+    <tr>
+      <th>Form field</th>
+      <th>What to enter</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Account Name</strong></td>
+      <td>A friendly display name, e.g. <em>Prod</em>, <em>Dev</em>, or your Snowflake account name. Shown in the account picker.</td>
+    </tr>
+    <tr>
+      <td><strong>Account Identifier</strong></td>
+      <td>The identifier from Section 1.1 &mdash; e.g. <code>MYORG-MYACCOUNT</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Warehouse</strong></td>
+      <td>The warehouse you granted in Section 1.3.</td>
+    </tr>
+    <tr>
+      <td><strong>Authentication Mode</strong></td>
+      <td>Select <strong>Key Pair</strong>. (Snowflake SSO is greyed out on Standard Edition &mdash; it's an Enterprise-tier feature.)</td>
+    </tr>
+    <tr>
+      <td><strong>Username</strong></td>
+      <td><code>maxmycloud</code> (the service user from Section 1.4b).</td>
+    </tr>
+    <tr>
+      <td><strong>User Role</strong></td>
+      <td><code>maxmycloud_role</code> (from Section 1.3).</td>
+    </tr>
+    <tr>
+      <td><strong>Private Key</strong></td>
+      <td>Paste the full contents of <code>rsa_key.p8</code>, including the <code>-----BEGIN PRIVATE KEY-----</code> and <code>-----END PRIVATE KEY-----</code> header/footer lines.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Once the account saves, MaxMyCloud starts collecting query, warehouse, and cost telemetry from your Native App. The first Health Check is typically ready within a few hours; ongoing warehouse monitoring runs continuously.</p>
+
+<p>If you set up multiple Snowflake accounts in Section 1, repeat this Section 3 for each additional account.</p>
+
+<h2>4. Ongoing Operations</h2>
+
+<p>Everything below is self-service &mdash; no MaxMyCloud involvement required.</p>
+
+<h3>4.1 &middot; Adding more Snowflake accounts yourself</h3>
+
+<ol>
+  <li>Send the new account identifier to MaxMyCloud (via <a href="mailto:support@maxmycloud.com">support@maxmycloud.com</a>) so we can publish the Native App private listing to it. No new user email needed &mdash; your existing MaxMyCloud tenant covers all accounts.</li>
+  <li>Complete Sections 1.2 &ndash; 1.4 for the new Snowflake account &mdash; Native App install, role, service user + key pair.</li>
+  <li>Follow Section 3 to add the new account in the MaxMyCloud UI.</li>
+</ol>
+
+<h3>4.2 &middot; Inviting more MaxMyCloud users</h3>
+
+<p>Navigate to <strong>Settings &rarr; Users &rarr; Add User</strong> in the MaxMyCloud UI.</p>
+
+<p>Enter the invitee's email address and select their role (User or Admin). MaxMyCloud sends them a set-your-password link by email. Once they set their password, they can sign in with email + password. Admin users are prompted to enroll in authenticator-app MFA on first sign-in, same as your original admin.</p>
+
+<p>You can revoke a user at any time from the same Users page.</p>
+
+<h2>Need Help?</h2>
+
+<p>If you encounter any issues during installation, please contact MaxMyCloud support at <a href="mailto:support@maxmycloud.com">support@maxmycloud.com</a>.</p>
+
+<p>To help us resolve the issue quickly, include:</p>
+
+<ul>
+  <li>Your MaxMyCloud tenant admin email.</li>
+  <li>Which section / step you were on.</li>
+  <li>The full text of any error message.</li>
+  <li>The steps you've already tried.</li>
+</ul>
+
+<p class="footer-note">We hope you enjoy using MaxMyCloud!</p>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+Line item,Monthly USD,Notes
+"ECS Fargate — Web UI (1 vCPU / 2 GB × 2 tasks, 24×7)",60.00,"HA requires 2 tasks. Drop to 1 task → ~$30. Includes the recommendation logic (JS port, inlined into the main app)."
+"DocumentDB db.t3.medium × 1 instance",60.00,"+ ~$0.10/GB-month storage (starts near 0). No replica in baseline."
+"NAT gateway",32.00,"Fixed hourly + $0.045/GB egress"
+"Application Load Balancer",18.00,"~$16 fixed + LCU-based scaling"
+"EFS",0.30,"Near-zero used bytes typically"
+"CloudWatch Logs (30-day retention)",1.00,"Idle traffic; higher under load"
+"Secrets Manager",0.40,"~$0.40/secret/month × ~1 secret"
+"Baseline total",171.70,"Enterprise AWS accounts with existing Savings Plans / Reserved Capacity typically land closer to ~$155."
+,,
+"Optional add-ons (not in baseline)",,
+"Bastion t3.nano (for MaxMyCloud support tunnel access)",4.00,"Only if using bastion-based support access instead of VPN"
+"Bedrock — Nova Lite (light AI usage)",5.00,"1 health check/day + moderate chat"
+"Bedrock — Nova Pro (moderate AI usage)",45.00,"Same volume as above with a higher-quality model"
+"Bedrock — Nova Pro (heavy AI usage)",400.00,"10 health checks/day + active chat + orchestration reviews"
+"SES (email notifications)",1.00,"$0.10 per 1,000 emails"
+"Data egress out of AWS",1.00,"~10 users ≈ 10 GB/mo ≈ ~$1; 100 users ≈ ~$9"
+,,
+"Optional HA upgrades (multi-AZ)",,
+"DocumentDB replica (2nd AZ)",60.00,"Automatic failover if primary AZ fails"
+"Second NAT gateway (2nd AZ)",32.00,"Outbound survives an AZ failure"
+,,
+"Optional PrivateLink for fully air-gapped posture",,
+"Secrets Manager VPC endpoint",7.50,
+"ECR VPC endpoints (api + dkr + S3 gateway)",15.00,
+"CloudWatch Logs VPC endpoint",7.50,
+"Bedrock VPC endpoint",7.50,"Only if AI is enabled"
+"PrivateLink subtotal",37.50,"Fully air-gapped from public internet for AWS services"
+,,
+"NOT included",,
+"Snowflake compute cost","","Small — MaxMyCloud read queries run as maxmycloud_role on your own warehouse"
+"MaxMyCloud subscription fee","","This document is the AWS infrastructure cost only"
+"Existing VPN / Direct Connect","","Assumed already in place; no additional cost from MaxMyCloud"
