@@ -77,10 +77,10 @@ Do all of these before starting. Most enterprise AWS accounts already satisfy th
 
 > **Do Part 1 once per Snowflake account you want MaxMyCloud to monitor.** If you have two prod accounts and a dev account, you'll run through this section three times. Each account gets its own Native App install, its own role, its own service user + key pair, and its own OAuth Security Integration for user SSO.
 
-MaxMyCloud connects to Snowflake using **two** independent auth surfaces, both of which need to be set up:
+MaxMyCloud connects to Snowflake through **two** independent auth surfaces:
 
-- **Key-pair authentication** — a service-account credential used only by MaxMyCloud's own backend processes (scheduled health checks, ongoing warehouse monitoring, autosize actions, subscription refresh). It runs as a dedicated `maxmycloud` service user. **No human logs in with key-pair auth** — the private key never leaves the app's Secrets Manager.
-- **OAuth Security Integration** — how your end-users sign in to the MaxMyCloud UI, with their own Snowflake identity (SSO). Users authenticate as themselves through Snowflake's OAuth flow; the app never sees their password.
+- **Key-pair authentication** (this section) — a service-account credential used only by MaxMyCloud's own backend processes (scheduled health checks, ongoing warehouse monitoring, autosize actions, subscription refresh). It runs as a dedicated `maxmycloud` service user. **No human logs in with key-pair auth** — the private key never leaves the app's Secrets Manager.
+- **OAuth Security Integration for user SSO** — set up in Part 3 after the AWS deploy is up, since it needs your AWS-side FQDN as its OAuth redirect URI.
 
 ### 1.1 · Share your Snowflake account identifier(s) with MaxMyCloud
 
@@ -120,7 +120,7 @@ Replace `your_warehouse` with the warehouse you want MaxMyCloud to use for its o
 
 ### 1.4 · Create the Snowflake service user (key-pair auth)
 
-MaxMyCloud's backend processes — scheduled health checks, ongoing warehouse monitoring, autosize actions, subscription refresh — authenticate to this Snowflake account as a dedicated `maxmycloud` service user, using a **key pair**. Key-pair auth is the standard Snowflake pattern for machine-to-machine access: the key never appears in a login prompt, never expires on a schedule, and never rotates through the user-password channel. No human logs in with this credential; end users authenticate separately through the OAuth Security Integration in Part 1.5.
+MaxMyCloud's backend processes — scheduled health checks, ongoing warehouse monitoring, autosize actions, subscription refresh — authenticate to this Snowflake account as a dedicated `maxmycloud` service user, using a **key pair**. Key-pair auth is the standard Snowflake pattern for machine-to-machine access: the key never appears in a login prompt, never expires on a schedule, and never rotates through the user-password channel. No human logs in with this credential; end users authenticate separately through the OAuth Security Integration set up in Part 3.
 
 **Generate a key pair locally:**
 
@@ -129,7 +129,7 @@ openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt
 openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub
 ```
 
-You'll get two files: `rsa_key.p8` (private, keep safe) and `rsa_key.pub` (public, goes into Snowflake). Store the private key somewhere secure — you'll hand it to MaxMyCloud for the first-account bootstrap in Part 3.
+You'll get two files: `rsa_key.p8` (private, keep safe) and `rsa_key.pub` (public, goes into Snowflake). Store the private key somewhere secure — you'll paste its contents into the Add Account form in Part 3.3.
 
 **Create the Snowflake user:**
 
@@ -151,38 +151,13 @@ GRANT ROLE maxmycloud_role TO USER maxmycloud;
 ALTER USER maxmycloud SET RSA_PUBLIC_KEY='MIIBIjANBgkqh...';
 ```
 
-### 1.5 · Create the OAuth Security Integration (for user SSO)
-
-This is what lets your end-users log in to the MaxMyCloud UI with their Snowflake identity. The redirect URI must match the hostname you're deploying the UI at (from `terraform.tfvars` → `fqdn`).
-
-Run as `ACCOUNTADMIN`:
-
-```sql
-CREATE SECURITY INTEGRATION maxmycloud
-  TYPE                = OAUTH
-  ENABLED             = TRUE
-  OAUTH_CLIENT        = CUSTOM
-  OAUTH_CLIENT_TYPE   = 'CONFIDENTIAL'
-  OAUTH_REDIRECT_URI  = 'https://<your-fqdn>/api/oauth/callback'
-  OAUTH_ISSUE_REFRESH_TOKENS = TRUE
-  OAUTH_REFRESH_TOKEN_VALIDITY = 7776000;
-```
-
-Then retrieve the OAuth client id + secret — you'll hand these to MaxMyCloud for the first-account bootstrap:
-
-```sql
-SELECT SYSTEM$SHOW_OAUTH_CLIENT_SECRETS('MAXMYCLOUD');
-```
-
-Copy `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` from the returned JSON — treat both as secrets.
-
-**Summary of what you've now created for this account** — the Native App, the role + grants, a key-pair service user, and an OAuth Security Integration. Repeat all of Part 1 for the next Snowflake account. When done, gather everything you'll need to hand off in Part 3:
+**Summary of what you've now created for this account** — the Native App, the role + grants, and a key-pair service user. Repeat Part 1 for each additional Snowflake account you want MaxMyCloud to monitor. Gather these for Part 3 (Add Account form):
 
 - Account identifier (`<org>-<acct>`)
 - Warehouse name
 - `rsa_key.p8` (private key file)
-- `OAUTH_CLIENT_ID`
-- `OAUTH_CLIENT_SECRET`
+
+The OAuth Security Integration for user SSO is set up in Part 3, once your AWS-side FQDN exists.
 
 ---
 
@@ -327,7 +302,7 @@ Nine resource groups, in order of dependency:
 
 ### 2B.2 · Container image + port
 
-- Registry: `ghcr.io/maxmycloud/maxmycloud-ui:<version>` (public, anonymous pull; also mirrored to your own ECR if you prefer — see § 2B.10).
+- Registry: `ghcr.io/maxmycloud/maxmycloud-ui:<version>` (public, anonymous pull). Mirror into your own ECR if your security policy requires an internal registry; then reference the ECR URI in the task definition and grant the execution role `AmazonEC2ContainerRegistryReadOnly`.
 - Container port: **3000**. This is Nuxt's default; the container listens on `0.0.0.0:3000`. Wire your target group and ECS SG ingress to :3000.
 - Pin to a specific tag. Do NOT use `:latest`. Every release is tagged at [github.com/maxmycloud/maxmycloud-deploy/tags](https://github.com/maxmycloud/maxmycloud-deploy/tags).
 - Image is `linux/amd64`. Choose `X86_64` on Fargate.
@@ -378,11 +353,7 @@ Create a single secret (recommended) with a JSON payload containing all ten keys
 
 Container secrets are injected into the task definition, not written to the image or your Terraform state.
 
-### 2B.6 · CloudWatch log group
-
-Create a log group (e.g. `/ecs/maxmycloud-<tenant>`) with a retention that matches your compliance policy (7-day for POC, longer for prod). Reference it from the task definition's `logConfiguration.options.awslogs-group`.
-
-### 2B.7 · Application Load Balancer
+### 2B.6 · Application Load Balancer + DNS
 
 - **Scheme**: internet-facing or internal — whichever fits your access model. Customer-tenant deploys often keep it internal + reachable via VDI/VPN.
 - **Listener**: HTTPS :443 with an ACM certificate for your FQDN. HTTP :80 is optional (redirect to HTTPS if you add it).
@@ -392,10 +363,13 @@ Create a log group (e.g. `/ecs/maxmycloud-<tenant>`) with a retention that match
   - Health check path: `/login`
   - Health check interval: 30s (Fargate cold pull is ~30s, so more aggressive intervals cause pointless unhealthy blips during deploys)
   - Success codes: 200–399
+- **DNS**: create a record from your FQDN to the ALB DNS name (CNAME for a subdomain, ALIAS if you're on Route 53 and want apex support). The ACM cert on the listener must include the same FQDN.
 
 The container's session cookies are set with the `Secure` flag (production-hardened). Without HTTPS on the ALB the browser refuses to send them and login silently fails — do NOT try HTTP-only for anything past a two-minute smoke test.
 
-### 2B.8 · ECS Fargate task definition + service
+### 2B.7 · ECS Fargate task definition + service
+
+Create a CloudWatch log group first (e.g. `/ecs/maxmycloud-<tenant>`) with a retention matching your compliance policy (7-day for POC, longer for prod). The task def references it below.
 
 **Task definition**:
 - Launch type: Fargate
@@ -408,33 +382,16 @@ The container's session cookies are set with the `Secure` flag (production-harde
   - Image: `ghcr.io/maxmycloud/maxmycloud-ui:<pinned-version>` (from § 2B.2)
   - Port mapping: `3000/tcp`
   - Secrets: 10 entries pointing at the Secrets Manager secret ARN with `:<KEY_NAME>::` suffix per AWS convention
-  - Log configuration: `awslogs` driver → log group from § 2B.6
+  - Log configuration: `awslogs` driver → the log group you created above
 
 **Service**:
 - Cluster: whatever ECS cluster name you use
 - Desired count: 1 (bump for HA later)
 - Launch type: Fargate
 - Network: subnets from § 2B.1, security group from § 2B.1 (ECS group), `assignPublicIp` = ENABLED if using public subnets or DISABLED if using private
-- Load balancer: point at the target group from § 2B.7, container name `maxmycloud-ui`, container port `3000`
+- Load balancer: point at the target group from § 2B.6, container name `maxmycloud-ui`, container port `3000`
 
-### 2B.9 · DNS
-
-Create a DNS record from your FQDN to the ALB DNS name (CNAME for a subdomain, ALIAS if you're on Route 53 and want apex support). ACM cert on the ALB listener must include the same FQDN.
-
-### 2B.10 · (Optional) Mirror the image into your ECR
-
-Public GHCR pull works for most orgs. If your security policy requires an internal registry:
-
-```bash
-aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account>.dkr.ecr.<region>.amazonaws.com
-docker pull ghcr.io/maxmycloud/maxmycloud-ui:<version>
-docker tag  ghcr.io/maxmycloud/maxmycloud-ui:<version> <account>.dkr.ecr.<region>.amazonaws.com/maxmycloud-ui:<version>
-docker push <account>.dkr.ecr.<region>.amazonaws.com/maxmycloud-ui:<version>
-```
-
-Then reference the ECR URI in your task definition instead of `ghcr.io/...`. Execution role needs `AmazonEC2ContainerRegistryReadOnly` if you're on ECR.
-
-### 2B.11 · Verify
+### 2B.8 · Verify
 
 After the service reports RUNNING and the target group reports HEALTHY:
 
@@ -449,66 +406,77 @@ After the service reports RUNNING and the target group reports HEALTHY:
 
 If any of these fails, tail the container's CloudWatch log group for the last 5 minutes and share with MaxMyCloud support. Bootstrap plugin errors are the loudest failure mode; TLS handshake failures against DocumentDB are the second.
 
-### 2B.12 · What's different from Part 2A
-
-Two small things:
-
-- **No ECR by default.** Part 2A pushes the image into your ECR for locality; Part 2B assumes you pull directly from GHCR unless § 2B.10 applies. Both work; ECR is faster on scale-out but adds a rotation surface.
-- **No SES email until you add it.** Part 2A wires SES for outbound (health-check email digests, notifications). If you're not shipping email at POC-time, skip it — the app tolerates its absence (email-dependent features simply don't run). Add SES + `AWS_REGION` env when you're ready.
-
 ---
 
-## Part 3 — First-account bootstrap (MaxMyCloud runs this with you)
+## Part 3 — First-account bootstrap (you run this yourself)
 
-The AWS side is up, but you can't log in to it yet — the UI requires a Snowflake OAuth connection to authenticate users, and no connection is registered. **MaxMyCloud handles this initial bootstrap for you**, because it's a chicken-and-egg problem: registering the first Snowflake connection requires being signed in as an admin, and there is no admin yet. Delivery is your choice — a scheduled screen-share with a MaxMyCloud engineer, or fully asynchronous online (we sign in via support-access, complete the bootstrap, and confirm by email). Either way, hand-off time is ~1 business day.
+The AWS side is up, and the customer-admin credential you set in Part 2 (§ 2A.4 or § 2B.5 — `NUXT_CUSTOMER_ADMIN_EMAIL` + `NUXT_CUSTOMER_ADMIN_BCRYPT_HASH`) was seeded into the database at first boot. Sign in as that admin, create the OAuth Security Integration in Snowflake, and register your first Snowflake account in the UI. MaxMyCloud support is available on request — email `support@maxmycloud.com` if you want us on a screen-share while you do this.
 
-### 3.1 · Send MaxMyCloud what we need for the first account
+### 3.1 · Sign in as your seeded customer admin
 
-Pick **one** of the Snowflake accounts you set up in Part 1 to be the first one wired in — typically your primary prod account. Send its info securely to MaxMyCloud (encrypted email, 1Password share, or whatever your org uses):
+Browse to `https://<your-fqdn>/login?bypass=1` (the `?bypass=1` shows the password form; the plain `/login` route defaults to SSO-only, which isn't wired yet).
 
-| Item | Where it came from |
+Sign in with:
+
+- **Email**: the value of `NUXT_CUSTOMER_ADMIN_EMAIL` from your Secrets Manager entry.
+- **Password**: the plaintext you fed into the bcrypt-hash command when generating `NUXT_CUSTOMER_ADMIN_BCRYPT_HASH` (kept in your password manager — MaxMyCloud never received it).
+
+First sign-in redirects to `/profile?enrollMfa=1`. Scan the TOTP QR with your authenticator app and enter the 6-digit code to enroll. You're now signed in as the tenant admin, no Snowflake connection yet.
+
+### 3.2 · Create the OAuth Security Integration in Snowflake
+
+Now that `<your-fqdn>` exists, create the OAuth Security Integration in the Snowflake account you set up in Part 1. This is what lets end-users sign in to the MaxMyCloud UI with their Snowflake identity.
+
+Run as `ACCOUNTADMIN` in a worksheet:
+
+```sql
+CREATE SECURITY INTEGRATION maxmycloud
+  TYPE                = OAUTH
+  ENABLED             = TRUE
+  OAUTH_CLIENT        = CUSTOM
+  OAUTH_CLIENT_TYPE   = 'CONFIDENTIAL'
+  OAUTH_REDIRECT_URI  = 'https://<your-fqdn>/api/oauth/callback'
+  OAUTH_ISSUE_REFRESH_TOKENS = TRUE
+  OAUTH_REFRESH_TOKEN_VALIDITY = 7776000;
+```
+
+Then retrieve the client id + secret — you enter these in the next step:
+
+```sql
+SELECT SYSTEM$SHOW_OAUTH_CLIENT_SECRETS('MAXMYCLOUD');
+```
+
+Copy `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` from the returned JSON. Treat both as secrets.
+
+### 3.3 · Register your first Snowflake account in the UI
+
+Still signed in as the customer admin, navigate to **Settings → Accounts → Add Account**. Fill in:
+
+| Field | Value |
 |---|---|
-| **Deploy URL** | `https://<your-fqdn>` from Part 2 |
-| **Snowflake account URL** | `https://<org>-<acct>.snowflakecomputing.com` — see Appendix if you need to look it up |
-| **Warehouse** | The warehouse granted in Part 1.3 |
-| **Service username** | `maxmycloud` (or whatever you named it in Part 1.4) |
-| **Private key** | Contents of `rsa_key.p8` from Part 1.4 |
-| **OAuth client id + secret** | From Part 1.5 |
-| **First admin user's email** | Your Snowflake login email — this is the person who will sign in first |
+| Snowflake account URL | `https://<org>-<acct>.snowflakecomputing.com` from Part 1.1 |
+| Warehouse | The warehouse granted in Part 1.3 |
+| Service username | `maxmycloud` (or whatever you named it in Part 1.4) |
+| Private key | Contents of `rsa_key.p8` from Part 1.4 |
+| OAuth client id + secret | From § 3.2 above |
 
-### 3.2 · MaxMyCloud registers the connection + provisions your first user
+Click **Test Connection** to verify the key-pair and OAuth values, then **Save**.
 
-A MaxMyCloud engineer will:
+After the first Snowflake account with a key-pair is added, the UI auto-navigates to the Users page so you can invite the human users who will sign in via SSO.
 
-1. Sign in to your deploy as a bootstrap admin using our support-access flow.
-2. Register your first Snowflake account in the UI using the info above.
-3. Enable Snowflake SSO for that account so your users can log in with their Snowflake identity.
-4. Grant your first admin user the necessary UI role.
-5. Confirm the wiring end-to-end by running a Health Check on your data, and share the result with you (screen-share or email — your choice).
-6. Live training on the cost-insight dashboards, real-time monitoring, and warehouse optimization workflows is available on request.
+### 3.4 · Adding more Snowflake accounts
 
-After this step, you own the deploy fully — MaxMyCloud's support-access can be rotated out (see `DEPLOY.md` § Support access).
+Any additional Snowflake accounts are self-service — the same procedure as § 3.3, once you've completed Part 1 and § 3.2 for the new account (each Snowflake account needs its own Native App install, key-pair service user, and OAuth Security Integration).
 
-### 3.3 · Adding more Snowflake accounts yourself
+### 3.5 · Inviting more users
 
-Once the first account is live and you're signed in, adding any additional Snowflake accounts is self-service:
-
-1. Complete Part 1 of this guide for the new account (Native App install, role, service user + key pair, OAuth Security Integration).
-2. In the MaxMyCloud UI, navigate to **Settings → Accounts → Add Account**.
-3. Fill in the same fields from the table above — account URL, warehouse, service user, private key, OAuth client id + secret.
-4. Click **Test Connection**, then **Save**.
-
-The new account appears in your account list and starts collecting data immediately. No MaxMyCloud involvement needed.
-
-### 3.4 · Inviting more MaxMyCloud users
-
-Navigate to **Settings → Users → Add User** in the UI. Invited users sign in through Snowflake SSO — as long as they have a Snowflake account with the OAuth integration enabled, they can log in. You control UI-level role at invite time.
+**Settings → Users → Add User** in the UI. Invited users sign in through Snowflake SSO — as long as they have a Snowflake account with the OAuth integration enabled, they can log in. You control UI-level role at invite time.
 
 ---
 
 ## Ongoing operations
 
-Adding more users and Snowflake accounts is covered in Part 3.3 / 3.4 above. Everything below is standard AWS-operator work.
+Adding more users and Snowflake accounts is covered in Part 3.4 / 3.5 above. Everything below is standard AWS-operator work.
 
 ### Turning on AI features
 
